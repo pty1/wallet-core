@@ -15,11 +15,54 @@ fn main() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap()).join("proto");
     let cargo_manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
-    let proto_dir = cargo_manifest_dir
-        .join("..")
-        .join("..")
-        .join("src")
-        .join("proto");
+    // Try multiple possible locations for proto files
+    let possible_proto_dirs = vec![
+        // Standard location relative to manifest
+        cargo_manifest_dir
+            .join("..")
+            .join("..")
+            .join("src")
+            .join("proto"),
+        // Nix build location (one level up from rust workspace)
+        cargo_manifest_dir.join("..").join("src").join("proto"),
+        // Fallback to env var if set
+        env::var("WALLET_CORE_PROTO_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_default(),
+    ];
+
+    // Debug: print what paths we're trying
+    eprintln!("Looking for proto files in:");
+    for p in &possible_proto_dirs {
+        eprintln!("  {} (exists: {})", p.display(), p.exists());
+    }
+
+    // Debug: list what's in the parent directories
+    eprintln!(
+        "Contents of {:?}:",
+        cargo_manifest_dir.join("..").join("..").canonicalize()
+    );
+    if let Ok(entries) = fs::read_dir(cargo_manifest_dir.join("..").join("..")) {
+        for entry in entries.flatten() {
+            eprintln!("  {:?}", entry.file_name());
+        }
+    }
+    eprintln!(
+        "Contents of {:?}:",
+        cargo_manifest_dir.join("..").canonicalize()
+    );
+    if let Ok(entries) = fs::read_dir(cargo_manifest_dir.join("..")) {
+        for entry in entries.flatten() {
+            eprintln!("  {:?}", entry.file_name());
+        }
+    }
+
+    let proto_dir = possible_proto_dirs
+        .iter()
+        .find(|p| p.exists())
+        .cloned()
+        .expect("Expected a valid directory with proto files");
+
     let proto_dir_str = proto_dir.to_str().expect("Invalid proto directory path");
     // Re-run this build.rs if the `proto` directory has been changed (i.e. a new file is added).
     println!("cargo:rerun-if-changed={}", proto_dir_str);
