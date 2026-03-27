@@ -33,8 +33,9 @@
             pkgs.runCommand "wallet-core-generated"
               { nativeBuildInputs = [ codegen-v2-tool ]; }
               ''
-                mkdir -p $TMPDIR/workspace/{rust/bindings,include/TrustWalletCore,src/Generated,codegen-v2}
+                mkdir -p $TMPDIR/workspace/{rust/bindings,include/TrustWalletCore,src/Generated,codegen-v2/manifest}
                 cp ${rustLib}/bindings/*.yaml $TMPDIR/workspace/rust/bindings/
+                cp ${./codegen-v2/manifest}/*.yaml $TMPDIR/workspace/codegen-v2/manifest/
                 (cd $TMPDIR/workspace/codegen-v2 && parser cpp)
                 mkdir -p $out/{include/TrustWalletCore,src/Generated}
                 cp $TMPDIR/workspace/include/TrustWalletCore/*.h $out/include/TrustWalletCore/
@@ -97,8 +98,10 @@
 
               installPhase = ''
                 install -Dm644 libTrustWalletCore.a $out/lib/libTrustWalletCore.a
-                cp -r $src/include $out/
-                find $src/src -name '*.pb.h' -exec install -Dm644 {} $out/include/ \;
+                install -Dm644 trezor-crypto/libTrezorCrypto.a $out/lib/libTrezorCrypto.a
+                install -Dm644 ${rustLib}/lib/libwallet_core_rs.a $out/lib/libwallet_core_rs.a
+                cp -r source/include $out/
+                find source/src -name '*.pb.h' -exec install -Dm644 {} $out/include/ \;
               '';
             };
 
@@ -153,6 +156,18 @@
             shellHook = ''
               export CC="${stdenv.cc}/bin/clang"
               export CXX="${stdenv.cc}/bin/clang++"
+            '';
+          };
+
+          devShells.go = let
+            ffi = config.packages.wallet-core-ffi;
+          in pkgs.mkShell {
+            nativeBuildInputs = [ pkgs.go ];
+            buildInputs = [ protobuf ];
+            shellHook = ''
+              export CGO_CFLAGS="-I${ffi}/include"
+              export CGO_LDFLAGS="-L${ffi}/lib -L${protobuf}/lib -Wl,-rpath,${protobuf}/lib -lTrustWalletCore -lwallet_core_rs -lprotobuf -lTrezorCrypto -lstdc++ -lm"
+              export LD_LIBRARY_PATH="${protobuf}/lib:$LD_LIBRARY_PATH"
             '';
           };
         };
