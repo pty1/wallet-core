@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nci.url = "github:yusdacra/nix-cargo-integration";
+    nix-filter.url = "github:numtide/nix-filter";
   };
 
   outputs = inputs:
@@ -16,8 +17,26 @@
       perSystem = { config, pkgs, system, ... }:
         let
           inherit (pkgs) lib;
+          nix-filter = inputs.nix-filter.lib;
           stdenv = pkgs.llvmPackages.stdenv;
           protobuf = pkgs.protobuf_21;
+
+          ffiSrc = nix-filter {
+            root = ./.;
+            include = [
+              "CMakeLists.txt"
+              "registry.json"
+              "docs/registry.md"
+              (nix-filter.inDirectory "cmake")
+              (nix-filter.inDirectory "src")
+              (nix-filter.inDirectory "include")
+              (nix-filter.inDirectory "trezor-crypto")
+              (nix-filter.inDirectory "tools")
+              (nix-filter.inDirectory "codegen")
+              (nix-filter.inDirectory "jni")
+              (nix-filter.inDirectory "tests")
+            ];
+          };
 
           protobuf-plugins = stdenv.mkDerivation {
             pname = "wallet-core-protobuf-plugins";
@@ -46,11 +65,11 @@
             stdenv.mkDerivation {
               pname = "wallet-core-ffi";
               version = "0.1.0";
-              src = ./.;
+              src = ffiSrc;
 
               nativeBuildInputs = [
                 pkgs.cmake protobuf protobuf-plugins
-                pkgs.ruby pkgs.which
+                pkgs.ruby pkgs.which pkgs.perl
               ];
 
               buildInputs = [ pkgs.boost pkgs.nlohmann_json protobuf ];
@@ -61,6 +80,7 @@
                 "-DBUILD_TESTING=OFF"
                 "-DBoost_INCLUDE_DIR=${pkgs.boost}/include"
                 "-DWALLET_CORE_RS_TARGET_DIR=${rustLib}"
+                "-DTW_BUILD_EXAMPLES=OFF"
               ];
 
               postPatch = ''
@@ -90,6 +110,9 @@
                 target_link_libraries(protobuf INTERFACE protobuf::libprotobuf)
                 target_include_directories(protobuf INTERFACE ''${Protobuf_INCLUDE_DIRS})
                 EOF
+
+                # Disable Swift config generation
+                sed -i '/configure_file.*swift\/cpp.xcconfig/,+0d' CMakeLists.txt
               '';
 
               buildPhase = ''
