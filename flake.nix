@@ -186,7 +186,7 @@
             ffi = config.packages.wallet-core-ffi;
           in pkgs.mkShell {
             nativeBuildInputs = [ pkgs.go ];
-            buildInputs = [ protobuf ];
+            buildInputs = [ protobuf pkgs.protoc-gen-go ];
             shellHook = ''
               export CGO_CFLAGS="-I${ffi}/include"
               export CGO_LDFLAGS="-L${ffi}/lib -L${protobuf}/lib -Wl,-rpath,${protobuf}/lib -lTrustWalletCore -lwallet_core_rs -lprotobuf -lTrezorCrypto -lstdc++ -lm"

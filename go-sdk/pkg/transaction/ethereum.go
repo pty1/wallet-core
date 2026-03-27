@@ -20,7 +20,7 @@ import (
 	"unsafe"
 
 	"github.com/trustwallet/go-wallet-core/pkg/coin"
-	ethereumproto "github.com/trustwallet/go-wallet-core/pkg/proto/ethereum"
+	ethproto "github.com/trustwallet/go-wallet-core/pkg/proto/ethereum"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -168,15 +168,15 @@ func (b *EthereumTransactionBuilder) Sign(privateKey []byte) ([]byte, error) {
 	return outputBytes, nil
 }
 
-func (b *EthereumTransactionBuilder) buildSigningInput(privateKey []byte) (*ethereumproto.SigningInput, error) {
-	var txMode ethereumproto.TransactionMode
+func (b *EthereumTransactionBuilder) buildSigningInput(privateKey []byte) (*ethproto.SigningInput, error) {
+	var txMode ethproto.TransactionMode
 	if b.txType == EthereumTxTypeLegacy {
-		txMode = ethereumproto.TransactionMode_Legacy
+		txMode = ethproto.TransactionMode_Legacy
 	} else {
-		txMode = ethereumproto.TransactionMode_Enveloped
+		txMode = ethproto.TransactionMode_Enveloped
 	}
 
-	input := &ethereumproto.SigningInput{
+	input := &ethproto.SigningInput{
 		ChainId:    b.chainID.Bytes(),
 		Nonce:      big.NewInt(int64(b.nonce)).Bytes(),
 		GasLimit:   big.NewInt(int64(b.gasLimit)).Bytes(),
@@ -192,9 +192,9 @@ func (b *EthereumTransactionBuilder) buildSigningInput(privateKey []byte) (*ethe
 		input.MaxInclusionFeePerGas = b.maxPriorityFeePerGas.Bytes()
 	}
 
-	input.Transaction = &ethereumproto.Transaction{
-		TransactionOneof: &ethereumproto.Transaction_Transfer_{
-			Transfer: &ethereumproto.Transaction_Transfer{
+	input.Transaction = &ethproto.Transaction{
+		TransactionOneof: &ethproto.Transaction_Transfer_{
+			Transfer: &ethproto.Transaction_Transfer{
 				Amount: b.value.Bytes(),
 				Data:   b.data,
 			},

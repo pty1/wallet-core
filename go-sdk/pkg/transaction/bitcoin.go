@@ -20,7 +20,7 @@ import (
 	"unsafe"
 
 	"github.com/trustwallet/go-wallet-core/pkg/coin"
-	bitcoinproto "github.com/trustwallet/go-wallet-core/pkg/proto/bitcoin"
+	btcproto "github.com/trustwallet/go-wallet-core/pkg/proto/bitcoin"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -43,9 +43,9 @@ type BitcoinUTXO struct {
 	Sequence uint32
 }
 
-func (u *BitcoinUTXO) toProto() *bitcoinproto.UnspentTransaction {
-	return &bitcoinproto.UnspentTransaction{
-		OutPoint: &bitcoinproto.OutPoint{
+func (u *BitcoinUTXO) toProto() *btcproto.UnspentTransaction {
+	return &btcproto.UnspentTransaction{
+		OutPoint: &btcproto.OutPoint{
 			Hash:     u.TxHash,
 			Index:    u.TxIndex,
 			Sequence: u.Sequence,
@@ -141,12 +141,12 @@ func (b *BitcoinTransactionBuilder) Sign() ([]byte, error) {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
-	protoUTXOs := make([]*bitcoinproto.UnspentTransaction, len(b.utxos))
+	protoUTXOs := make([]*btcproto.UnspentTransaction, len(b.utxos))
 	for i, utxo := range b.utxos {
 		protoUTXOs[i] = utxo.toProto()
 	}
 
-	input := &bitcoinproto.SigningInput{
+	input := &btcproto.SigningInput{
 		HashType:      uint32(b.sigHashType),
 		Amount:       b.amount,
 		ByteFee:       b.feeRate,
