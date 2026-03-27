@@ -67,7 +67,6 @@ var CosmosChainConfigs = map[coin.CoinType]CosmosChainConfig{
 	coin.Nativeinjective: {ChainID: "injective-1", Denom: "inj", Hrp: "inj", CoinType: coin.Nativeinjective, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1Extended},
 	coin.Nativecanto:     {ChainID: "canto_7700-1", Denom: "acanto", Hrp: "canto", CoinType: coin.Nativecanto, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1Extended},
 	coin.Nativeevmos:     {ChainID: "evmos_9001-2", Denom: "aevmos", Hrp: "evmos", CoinType: coin.Nativeevmos, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1Extended},
-	coin.Acala:           {ChainID: "acala-2001", Denom: "acala", Hrp: "aca", CoinType: coin.Acala, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1},
 	coin.Thorchain:       {ChainID: "thorchain-mainnet-v1", Denom: "rune", Hrp: "thor", CoinType: coin.Thorchain, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1},
 	coin.Zetachain:       {ChainID: "zetachain_7000-1", Denom: "azeta", Hrp: "zeta", CoinType: coin.Zetachain, PublicKeyType: cosmosproto.SignerPublicKeyType_Secp256k1Extended},
 }

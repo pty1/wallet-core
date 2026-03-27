@@ -185,7 +185,7 @@
           devShells.go = let
             ffi = config.packages.wallet-core-ffi;
           in pkgs.mkShell {
-            nativeBuildInputs = [ pkgs.go ];
+            nativeBuildInputs = [ pkgs.go pkgs.gopls ];
             buildInputs = [ protobuf pkgs.protoc-gen-go ];
             shellHook = ''
               export CGO_CFLAGS="-I${ffi}/include"
