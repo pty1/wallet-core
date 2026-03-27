@@ -1,7 +1,6 @@
 package core
 
-// #cgo CFLAGS: -I../../../include
-// #cgo LDFLAGS: -L../../../build -L../../../build/local/lib -L../../../build/trezor-crypto -lTrustWalletCore -lwallet_core_rs -lprotobuf -lTrezorCrypto -lstdc++ -lm
+
 // #include <TrustWalletCore/TWHDWallet.h>
 // #include <TrustWalletCore/TWPrivateKey.h>
 // #include <TrustWalletCore/TWPublicKey.h>

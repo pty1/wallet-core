@@ -100,8 +100,8 @@
                 install -Dm644 libTrustWalletCore.a $out/lib/libTrustWalletCore.a
                 install -Dm644 trezor-crypto/libTrezorCrypto.a $out/lib/libTrezorCrypto.a
                 install -Dm644 ${rustLib}/lib/libwallet_core_rs.a $out/lib/libwallet_core_rs.a
-                cp -r source/include $out/
-                find source/src -name '*.pb.h' -exec install -Dm644 {} $out/include/ \;
+                cp -r ../include $out/include
+                find $src/src -name '*.pb.h' -exec install -Dm644 {} $out/include/ \;
               '';
             };
 
