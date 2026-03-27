@@ -283,137 +283,91 @@ func TestAllCoins_TransactionSigning(t *testing.T) {
 
 // Bitcoin Family Transaction Signers
 func signBitcoinTx(account *wallet.Account) ([]byte, error) {
-	privateKey, err := hex.DecodeString(account.PrivateKey())
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode private key: %w", err)
-	}
-	
-	tx, err := transaction.NewBitcoinTransaction().
-		To("1Bp9U1ogV3A14FMvKbRJms7ctyso4Z4Tcx").
-		Change("1FQc5LdgGHMHEN9nwkjmz6tWkxhPpxBvBU").
-		Amount(100000).
-		FeeRate(10).
-		AddUTXO(transaction.BitcoinUTXO{
-			TxHash:  make([]byte, 32),
-			Amount:  200000,
-			Script:  []byte("script"),
-			TxIndex: 0,
-		}).
-		PrivateKeys([][]byte{privateKey}).
-		Sign()
-	
-	if err != nil {
-		return nil, fmt.Errorf("bitcoin transaction signing failed: %w", err)
-	}
-	return tx, nil
+	return SignP2PKHTransaction(account, coin.Bitcoin, 100000, 10)
 }
 
 func signLitecoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Litecoin)
+	return SignP2PKHTransaction(account, coin.Litecoin, 100000, 10)
 }
 
 func signDogecoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Doge)
+	return SignP2PKHTransaction(account, coin.Doge, 100000000, 1)
 }
 
 func signDashTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Dash)
+	return SignP2PKHTransaction(account, coin.Dash, 100000, 10)
 }
 
 func signViacoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Viacoin)
+	return SignP2PKHTransaction(account, coin.Viacoin, 100000, 10)
 }
 
 func signGroestlcoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Groestlcoin)
+	return SignP2PKHTransaction(account, coin.Groestlcoin, 100000, 10)
 }
 
 func signDigiByteTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Digibyte)
+	return SignP2PKHTransaction(account, coin.Digibyte, 100000, 10)
 }
 
 func signMonacoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Monacoin)
+	return SignP2PKHTransaction(account, coin.Monacoin, 100000, 10)
 }
 
 func signDecredTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Decred)
+	return SignP2PKHTransaction(account, coin.Decred, 100000, 10)
 }
 
 func signSyscoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Syscoin)
+	return SignP2PKHTransaction(account, coin.Syscoin, 100000, 10)
 }
 
 func signFiroTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Firo)
+	return SignP2PKHTransaction(account, coin.Firo, 100000, 10)
 }
 
 func signPivxTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Pivx)
+	return SignP2PKHTransaction(account, coin.Pivx, 100000, 10)
 }
 
 func signQtumTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Qtum)
+	return SignP2PKHTransaction(account, coin.Qtum, 100000, 10)
 }
 
 func signRavencoinTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Ravencoin)
+	return SignP2PKHTransaction(account, coin.Ravencoin, 100000, 10)
 }
 
 func signBitcoinGoldTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Bitcoingold)
+	return SignP2PKHTransaction(account, coin.Bitcoingold, 100000, 10)
 }
 
 func signBitcoinCashTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Bitcoincash)
+	return SignP2PKHTransaction(account, coin.Bitcoincash, 100000, 10)
 }
 
 func signECashTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Ecash)
+	return SignP2PKHTransaction(account, coin.Ecash, 100000, 10)
 }
 
 func signBitcoinDiamondTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Bitcoindiamond)
+	return SignP2PKHTransaction(account, coin.Bitcoindiamond, 100000, 10)
 }
 
 func signZcashTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Zcash)
+	return SignP2PKHTransaction(account, coin.Zcash, 100000, 10)
 }
 
 func signKomodoTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Komodo)
+	return SignP2PKHTransaction(account, coin.Komodo, 100000, 10)
 }
 
 func signVergeTx(account *wallet.Account) ([]byte, error) {
-	return signBitcoinFamilyTx(account, coin.Verge)
+	return SignP2PKHTransaction(account, coin.Verge, 100000, 10)
 }
 
-// signBitcoinFamilyTx is a helper for Bitcoin-family coins
-func signBitcoinFamilyTx(account *wallet.Account, coinType coin.CoinType) ([]byte, error) {
-	privateKey, err := hex.DecodeString(account.PrivateKey())
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode private key: %w", err)
-	}
-	
-	builder := transaction.NewBitcoinTransaction().
-		CoinType(coinType).
-		To(account.Address()).
-		Change(account.Address()).
-		Amount(100000).
-		FeeRate(10).
-		AddUTXO(transaction.BitcoinUTXO{
-			TxHash:  make([]byte, 32),
-			Amount:  200000,
-			Script:  []byte("script"),
-			TxIndex: 0,
-		}).
-		PrivateKeys([][]byte{privateKey})
-	
-	tx, err := builder.Sign()
-	if err != nil {
-		return nil, fmt.Errorf("%s transaction signing failed: %w", coinType.ID(), err)
-	}
-	return tx, nil
+func signZelcashTx(account *wallet.Account) ([]byte, error) {
+	return SignP2PKHTransaction(account, coin.Zelcash, 100000, 10)
 }
 
 // Ethereum Family Transaction Signers
@@ -422,7 +376,7 @@ func signEthereumTx(account *wallet.Account) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode private key: %w", err)
 	}
-	
+
 	tx, err := transaction.NewEthereumTransaction().
 		ChainID(big.NewInt(1)).
 		Nonce(0).
@@ -431,7 +385,7 @@ func signEthereumTx(account *wallet.Account) ([]byte, error) {
 		Value(big.NewInt(1000000000000000000)).
 		GasPrice(big.NewInt(1000000000)).
 		Sign(privateKey)
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("ethereum transaction signing failed: %w", err)
 	}
@@ -668,7 +622,7 @@ func signEVMTx(account *wallet.Account, chainID int64) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode private key: %w", err)
 	}
-	
+
 	tx, err := transaction.NewEthereumTransaction().
 		ChainID(big.NewInt(chainID)).
 		Nonce(0).
@@ -677,7 +631,7 @@ func signEVMTx(account *wallet.Account, chainID int64) ([]byte, error) {
 		Value(big.NewInt(1000000000000000000)).
 		GasPrice(big.NewInt(1000000000)).
 		Sign(privateKey)
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("EVM transaction signing failed (chainID: %d): %w", chainID, err)
 	}
@@ -686,147 +640,147 @@ func signEVMTx(account *wallet.Account, chainID int64) ([]byte, error) {
 
 // Cosmos Family Transaction Signers
 func signCosmosTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Cosmos transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Cosmos, "1000000")
 }
 
 func signStargazeTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Stargaze transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Stargaze, "1000000")
 }
 
 func signJunoTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Juno transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Juno, "1000000")
 }
 
 func signStrideTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Stride transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Stride, "1000000")
 }
 
 func signAxelarTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Axelar transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Axelar, "1000000")
 }
 
 func signCrescentTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Crescent transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Crescent, "1000000")
 }
 
 func signKujiraTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Kujira transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Kujira, "1000000")
 }
 
 func signComdexTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Comdex transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Comdex, "1000000")
 }
 
 func signNeutronTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Neutron transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Neutron, "1000000")
 }
 
 func signSommelierTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Sommelier transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Sommelier, "1000000")
 }
 
 func signFetchAITx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("FetchAI transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Fetchai, "1000000")
 }
 
 func signMarsTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Mars transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Mars, "1000000")
 }
 
 func signUmeeTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Umee transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Umee, "1000000")
 }
 
 func signNobleTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Noble transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Noble, "1000000")
 }
 
 func signSeiTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Sei transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Sei, "1000000")
 }
 
 func signTiaTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Tia transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Tia, "1000000")
 }
 
 func signCoreumTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Coreum transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Coreum, "1000000")
 }
 
 func signQuasarTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Quasar transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Quasar, "1000000")
 }
 
 func signPersistenceTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Persistence transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Persistence, "1000000")
 }
 
 func signAkashTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Akash transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Akash, "1000000")
 }
 
 func signOsmosisTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Osmosis transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Osmosis, "1000000")
 }
 
 func signKavaTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Kava transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Kava, "1000000")
 }
 
 func signBandTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Band transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Band, "1000000")
 }
 
 func signBluzelleTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Bluzelle transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Bluzelle, "1000000")
 }
 
 func signCryptoOrgTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("CryptoOrg transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Cryptoorg, "1000000")
 }
 
 func signSecretTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Secret transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Secret, "1000000")
 }
 
 func signTerraTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Terra transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Terra, "1000000")
 }
 
 func signTerraV2Tx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("TerraV2 transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Terrav2, "1000000")
 }
 
 func signAgoricTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Agoric transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Agoric, "1000000")
 }
 
 func signDYDXTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("DYDX transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Dydx, "1000000")
 }
 
 func signNativeInjectiveTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("NativeInjective transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Nativeinjective, "1000000")
 }
 
 func signNativeCantoTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("NativeCanto transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Nativecanto, "1000000")
 }
 
 func signNativeEvmosTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("NativeEvmos transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Nativeevmos, "1000000")
 }
 
 func signAcalaTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Acala transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Acala, "1000000")
 }
 
 func signTHORChainTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("THORChain transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Thorchain, "1000000")
 }
 
 func signZetaChainTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("ZetaChain transaction signing not implemented")
+	return SignCosmosTransaction(account, coin.Zetachain, "1000000")
 }
 
 // Native Chain Transaction Signers
@@ -872,10 +826,6 @@ func signEOSTx(account *wallet.Account) ([]byte, error) {
 
 func signWAXTx(account *wallet.Account) ([]byte, error) {
 	return nil, fmt.Errorf("WAX transaction signing not implemented")
-}
-
-func signZelcashTx(account *wallet.Account) ([]byte, error) {
-	return nil, fmt.Errorf("Zelcash transaction signing not implemented")
 }
 
 func signAeternityTx(account *wallet.Account) ([]byte, error) {

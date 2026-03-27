@@ -11,6 +11,8 @@ package transaction
 #include <TrustWalletCore/TWData.h>
 #include <TrustWalletCore/TWString.h>
 #include <TrustWalletCore/TWBitcoinScript.h>
+#include <TrustWalletCore/TWPublicKey.h>
+#include <TrustWalletCore/TWPrivateKey.h>
 */
 import "C"
 import (
@@ -21,6 +23,7 @@ import (
 
 	"github.com/trustwallet/go-wallet-core/pkg/coin"
 	btcproto "github.com/trustwallet/go-wallet-core/pkg/proto/bitcoin"
+	"github.com/trustwallet/go-wallet-core/pkg/proto/common"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -137,6 +140,14 @@ func (b *BitcoinTransactionBuilder) Validate() error {
 }
 
 func (b *BitcoinTransactionBuilder) Sign() ([]byte, error) {
+	result, err := b.SignWithResult()
+	if err != nil {
+		return nil, err
+	}
+	return result.Encoded, nil
+}
+
+func (b *BitcoinTransactionBuilder) SignWithResult() (*BitcoinTxResult, error) {
 	if err := b.Validate(); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
@@ -146,9 +157,11 @@ func (b *BitcoinTransactionBuilder) Sign() ([]byte, error) {
 		protoUTXOs[i] = utxo.toProto()
 	}
 
+	hashType := uint32(C.TWBitcoinScriptHashTypeForCoin(C.enum_TWCoinType(b.coinType)))
+
 	input := &btcproto.SigningInput{
-		HashType:      uint32(b.sigHashType),
-		Amount:       b.amount,
+		HashType:      hashType,
+		Amount:        b.amount,
 		ByteFee:       b.feeRate,
 		ToAddress:     b.toAddress,
 		ChangeAddress: b.changeAddress,
@@ -172,33 +185,71 @@ func (b *BitcoinTransactionBuilder) Sign() ([]byte, error) {
 	defer C.TWDataDelete(cOutputData)
 
 	outputSize := C.TWDataSize(cOutputData)
-	outputBytes := make([]byte, outputSize)
-	if outputSize > 0 {
-		C.memcpy(
-			unsafe.Pointer(&outputBytes[0]),
-			unsafe.Pointer(C.TWDataBytes(cOutputData)),
-			C.size_t(outputSize),
-		)
+	if outputSize == 0 {
+		return nil, errors.New("signing returned empty result")
 	}
 
-	return outputBytes, nil
-}
+	outputBytes := make([]byte, outputSize)
+	C.memcpy(
+		unsafe.Pointer(&outputBytes[0]),
+		unsafe.Pointer(C.TWDataBytes(cOutputData)),
+		C.size_t(outputSize),
+	)
 
-func (b *BitcoinTransactionBuilder) SignWithResult() (*BitcoinTxResult, error) {
-	raw, err := b.Sign()
-	if err != nil {
-		return nil, err
+	var output btcproto.SigningOutput
+	if err := proto.Unmarshal(outputBytes, &output); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal signing output: %w", err)
+	}
+
+	if output.Error != common.SigningError_OK {
+		errMsg := output.ErrorMessage
+		if errMsg == "" {
+			errMsg = fmt.Sprintf("signing error code: %d", output.Error)
+		}
+		return nil, fmt.Errorf("transaction signing failed: %s", errMsg)
+	}
+
+	encoded := output.GetEncoded()
+	if len(encoded) == 0 {
+		return nil, errors.New("signed transaction is empty")
 	}
 
 	return &BitcoinTxResult{
-		Raw:  raw,
-		Hash: hex.EncodeToString(raw),
+		Encoded:       encoded,
+		TransactionID: output.GetTransactionId(),
+		Transaction:   output.GetTransaction(),
 	}, nil
 }
 
 type BitcoinTxResult struct {
-	Raw  []byte
-	Hash string
+	Encoded       []byte
+	TransactionID string
+	Transaction   *btcproto.Transaction
+}
+
+func BuildLockScript(address string, coinType coin.CoinType) ([]byte, error) {
+	cAddress := C.TWStringCreateWithUTF8Bytes(C.CString(address))
+	defer C.TWStringDelete(cAddress)
+
+	script := C.TWBitcoinScriptLockScriptForAddress(cAddress, C.enum_TWCoinType(coinType))
+	defer C.TWBitcoinScriptDelete(script)
+
+	scriptData := C.TWBitcoinScriptData(script)
+	defer C.TWDataDelete(scriptData)
+
+	size := C.TWDataSize(scriptData)
+	if size == 0 {
+		return nil, errors.New("failed to build lock script")
+	}
+
+	bytes := make([]byte, size)
+	C.memcpy(
+		unsafe.Pointer(&bytes[0]),
+		unsafe.Pointer(C.TWDataBytes(scriptData)),
+		C.size_t(size),
+	)
+
+	return bytes, nil
 }
 
 func SignBitcoinTransaction(
@@ -223,4 +274,43 @@ func SignBitcoinTransaction(
 	}
 
 	return builder.SignWithResult()
+}
+
+func PrivateKeyToPublicKey(privateKey []byte) ([]byte, error) {
+	if len(privateKey) != 32 {
+		return nil, errors.New("invalid private key length")
+	}
+
+	cPrivKey := C.TWDataCreateWithBytes(
+		(*C.uint8_t)(&privateKey[0]),
+		C.size_t(len(privateKey)),
+	)
+	defer C.TWDataDelete(cPrivKey)
+
+	twPrivKey := C.TWPrivateKeyCreateWithData(cPrivKey)
+	defer C.TWPrivateKeyDelete(twPrivKey)
+
+	twPubKey := C.TWPrivateKeyGetPublicKeySecp256k1(twPrivKey, true)
+	defer C.TWPublicKeyDelete(twPubKey)
+
+	pubKeyData := C.TWPublicKeyData(twPubKey)
+	defer C.TWDataDelete(pubKeyData)
+
+	size := C.TWDataSize(pubKeyData)
+	if size == 0 {
+		return nil, errors.New("failed to get public key")
+	}
+
+	bytes := make([]byte, size)
+	C.memcpy(
+		unsafe.Pointer(&bytes[0]),
+		unsafe.Pointer(C.TWDataBytes(pubKeyData)),
+		C.size_t(size),
+	)
+
+	return bytes, nil
+}
+
+func ParseHexPrivateKey(hexKey string) ([]byte, error) {
+	return hex.DecodeString(hexKey)
 }
