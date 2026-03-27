@@ -30,6 +30,7 @@ import (
 	everscaleproto "github.com/trustwallet/go-wallet-core/pkg/proto/everscale"
 	filecoinproto "github.com/trustwallet/go-wallet-core/pkg/proto/filecoin"
 	fioproto "github.com/trustwallet/go-wallet-core/pkg/proto/fio"
+	greenfieldproto "github.com/trustwallet/go-wallet-core/pkg/proto/greenfield"
 	hederaproto "github.com/trustwallet/go-wallet-core/pkg/proto/hedera"
 	iconproto "github.com/trustwallet/go-wallet-core/pkg/proto/icon"
 	internetcomputerproto "github.com/trustwallet/go-wallet-core/pkg/proto/internetcomputer"
@@ -96,197 +97,94 @@ func signTransactionRaw(coinType coin.CoinType, input proto.Message, output prot
 }
 
 func extractSignedTransaction(output proto.Message) ([]byte, error) {
+	if o, ok := output.(interface {
+		GetError() common.SigningError
+		GetErrorMessage() string
+	}); ok {
+		if o.GetError() != common.SigningError_OK {
+			return nil, fmt.Errorf("signing error: %s", o.GetErrorMessage())
+		}
+	}
+
 	switch o := output.(type) {
 	case *solanaproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *tronproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *rippleproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *stellarproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Signature), nil
 	case *polkadotproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *cardanoproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *tezosproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *eosproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.JsonEncoded), nil
 	case *nearproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.SignedTransaction, nil
 	case *filecoinproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *algorandproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *aptosproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *suiproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Signature), nil
 	case *binanceproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *fioproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *vechainproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *wavesproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *zilliqaeproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *nervosproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %v", o.Error)
-		}
 		return []byte(o.TransactionJson), nil
 	case *ontologyproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %v", o.Error)
-		}
 		return o.Encoded, nil
 	case *multiversxproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *tonproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *everscaleproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *pactusproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.SignedTransactionData, nil
 	case *polymeshproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *hederaproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *iotexproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *nanoproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Json), nil
 	case *aeternityproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *aionproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *iconproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Encoded), nil
 	case *iostproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *internetcomputerproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.SignedTransaction, nil
 	case *nebulasproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return []byte(o.Raw), nil
 	case *neoproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *nimiqproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *nulsproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
 	case *thetaproto.SigningOutput:
-		if o.Error != common.SigningError_OK {
-			return nil, fmt.Errorf("signing error: %s", o.ErrorMessage)
-		}
 		return o.Encoded, nil
+	case *greenfieldproto.SigningOutput:
+		return []byte(o.Serialized), nil
 	default:
 		return nil, fmt.Errorf("unsupported output type: %T", output)
 	}
@@ -455,6 +353,7 @@ func BuildTezosTransaction(privateKey []byte, operations *tezosproto.OperationLi
 func BuildEOSTransaction(privateKey []byte, fromAddress, toAddress string, amount int64, chainID, refBlockID []byte, refBlockTime int32) *eosproto.SigningInput {
 	return &eosproto.SigningInput{
 		PrivateKey:         privateKey,
+		PrivateKeyType:     eosproto.KeyType_MODERNK1,
 		ChainId:            chainID,
 		ReferenceBlockId:   refBlockID,
 		ReferenceBlockTime: refBlockTime,
@@ -473,6 +372,7 @@ func BuildEOSTransaction(privateKey []byte, fromAddress, toAddress string, amoun
 func BuildWAXTransaction(privateKey []byte, fromAddress, toAddress string, amount int64, chainID, refBlockID []byte, refBlockTime int32) *eosproto.SigningInput {
 	return &eosproto.SigningInput{
 		PrivateKey:         privateKey,
+		PrivateKeyType:     eosproto.KeyType_MODERNK1,
 		ChainId:            chainID,
 		ReferenceBlockId:   refBlockID,
 		ReferenceBlockTime: refBlockTime,
@@ -722,6 +622,7 @@ func BuildOntologyTransaction(ownerPrivateKey []byte, ownerAddress, toAddress st
 		Contract:        "ONT",
 		Method:          "transfer",
 		OwnerPrivateKey: ownerPrivateKey,
+		PayerPrivateKey: ownerPrivateKey,
 		OwnerAddress:    ownerAddress,
 		ToAddress:       toAddress,
 		Amount:          amount,
